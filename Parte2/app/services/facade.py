@@ -115,3 +115,13 @@ class HBnBFacade:
         review.update(**review_data)  # Actualizar datos del review
         self.review_repo.update(review_id, review_data)  # Guardar cambios en repositorio
         return review  # Retornar el review actualizado
+
+    def delete_review(self, review_id):
+        review = self.review_repo.get(review_id)  # Obtener review por ID
+        if review is None:
+            raise ValueError("Review not found")  # Error si el review no existe
+        self.review_repo.delete(review_id)  # Asumir que tienes un método delete en el repositorio
+
+    def get_reviews_by_place(self, place_id):
+        # Filtrar las reseñas por ID del lugar
+        return [review for review in self.review_repo.get_all() if review.place == place_id]
