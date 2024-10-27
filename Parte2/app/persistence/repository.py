@@ -31,7 +31,7 @@ class InMemoryRepository(Repository):
         self._storage = {}
 
     def add(self, obj):
-        self._storage[obj.id] = obj
+        self._storage[obj.id] = obj  # Guardamos el objeto usando su ID
 
     def get(self, obj_id):
         return self._storage.get(obj_id)
@@ -42,7 +42,7 @@ class InMemoryRepository(Repository):
     def update(self, obj_id, data):
         obj = self.get(obj_id)
         if obj:
-            obj.update(data)
+            obj.update(data)  # Actualiza los atributos directamente en el objeto almacenado
 
     def delete(self, obj_id):
         if obj_id in self._storage:

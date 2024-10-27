@@ -1,8 +1,9 @@
 from app import create_app
-from app.api import blueprint as api_blueprint
+from app.api import api_bp
 
 app = create_app()
-app.register_blueprint(api_blueprint)
+app.register_blueprint(api_bp)  # Registrar el blueprint de la API
 
 if __name__ == '__main__':
-    app.run()
+    # Ejecutar el servidor en modo debug para obtener más información en caso de errores
+    app.run(debug=True)

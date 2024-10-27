@@ -1,10 +1,13 @@
 from flask_restx import Namespace, Resource, fields
-from flask import request, jsonify
-from app.services import facade
+from app.services.facade import HBnBFacade
 
+# Crear la instancia de HBnBFacade para manejar las operaciones de amenities
+facade = HBnBFacade()
+
+# Crear el namespace para los endpoints de amenities
 api = Namespace('amenities', description='Amenity operations')
 
-# Modelo de Amenity para validación de entrada
+# Definir el modelo de Amenity para validación de entrada y documentación
 amenity_model = api.model('Amenity', {
     'name': fields.String(required=True, description='Name of the amenity')
 })
@@ -15,41 +18,49 @@ class AmenityList(Resource):
     @api.response(201, 'Amenity successfully created')
     @api.response(400, 'Invalid input data')
     def post(self):
-        """Registrar una nueva amenidad"""
-        data = request.json
+        """Register a new amenity"""
         try:
-            new_amenity = facade.create_amenity(data)
-            return jsonify(id=new_amenity.id, name=new_amenity.name), 201
-        except ValueError as e:
+            # Extraer los datos del JSON enviado en la solicitud
+            amenity_data = api.payload
+            # Crear un nuevo amenity a través de la capa de fachada
+            new_amenity = facade.create_amenity(amenity_data)
+            return {'id': new_amenity.id, 'name': new_amenity.name}, 201
+        except Exception as e:
             return {'message': str(e)}, 400
 
-    @api.response(200, 'Lista de amenidades obtenida exitosamente')
+    @api.response(200, 'List of amenities retrieved successfully')
     def get(self):
-        """Obtener una lista de todas las amenidades"""
+        """Retrieve a list of all amenities"""
+        # Obtener todas las amenities a través de la capa de fachada
         amenities = facade.get_all_amenities()
-        return jsonify([{'id': amenity.id, 'name': amenity.name} for amenity in amenities]), 200
+        return [{'id': amenity.id, 'name': amenity.name} for amenity in amenities], 200
 
-@api.route('/<string:amenity_id>')
+@api.route('/<amenity_id>')
 class AmenityResource(Resource):
-    @api.response(200, 'Detalles de amenidad obtenidos exitosamente')
-    @api.response(404, 'Amenidad no encontrada')
+    @api.response(200, 'Amenity details retrieved successfully')
+    @api.response(404, 'Amenity not found')
     def get(self, amenity_id):
-        """Obtener detalles de una amenidad por ID"""
+        """Get amenity details by ID"""
         try:
+            # Obtener el amenity específico usando el ID
             amenity = facade.get_amenity(amenity_id)
-            return jsonify(id=amenity.id, name=amenity.name), 200
+            return {'id': amenity.id, 'name': amenity.name}, 200
         except ValueError:
             return {'message': 'Amenity not found'}, 404
 
     @api.expect(amenity_model)
-    @api.response(200, 'Amenidad actualizada exitosamente')
-    @api.response(404, 'Amenidad no encontrada')
-    @api.response(400, 'Datos de entrada no válidos')
+    @api.response(200, 'Amenity updated successfully')
+    @api.response(404, 'Amenity not found')
+    @api.response(400, 'Invalid input data')
     def put(self, amenity_id):
-        """Actualizar la información de una amenidad"""
-        data = request.json
+        """Update an amenity's information"""
         try:
-            updated_amenity = facade.update_amenity(amenity_id, data)
-            return {'message': 'Amenity updated successfully'}, 200
+            # Extraer datos actualizados desde el JSON de la solicitud
+            amenity_data = api.payload
+            # Actualizar el amenity a través de la fachada
+            updated_amenity = facade.update_amenity(amenity_id, amenity_data)
+            return {'id': updated_amenity.id, 'name': updated_amenity.name}, 200
         except ValueError as e:
-            return {'message': str(e)}, 404 if 'not found' in str(e) else 400
+            return {'message': str(e)}, 404
+        except Exception as e:
+            return {'message': 'Invalid input data'}, 400
