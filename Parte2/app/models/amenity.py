@@ -6,5 +6,11 @@ class Amenity(BaseModel):
         self.name = name
 
     def update(self, data):
-        for key, value in data.items():
-            setattr(self, key, value)
+        if "name" in data:
+            name_value = data["name"]
+            if name_value:  # Verifica que el valor no sea vacío
+                self.name = name_value
+            else:
+                raise ValueError("Invalid input data: 'name' cannot be empty")
+        else:
+            raise ValueError("Invalid input data: 'name' field is required")
