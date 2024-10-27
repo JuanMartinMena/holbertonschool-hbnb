@@ -94,7 +94,11 @@ class HBnBFacade:
             raise ValueError("User not found")  # Error si el usuario no existe
 
         review_id = str(uuid4())  # Generar un UUID único para el review
-        review = Review(id=review_id, **review_data)  # Crear instancia de Review
+
+        # Extraer los campos relevantes del diccionario
+        review_data['id'] = review_id  # Agregar el nuevo ID
+        review = Review(**review_data)  # Crear instancia de Review
+
         self.review_repo.add(review)  # Guardar el review en el repositorio
         return review  # Retornar el review creado
 
