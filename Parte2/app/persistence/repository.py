@@ -34,15 +34,18 @@ class InMemoryRepository(Repository):
         self._storage[obj.id] = obj  # Guardamos el objeto usando su ID
 
     def get(self, obj_id):
-        return self._storage.get(obj_id)
+        obj = self._storage.get(obj_id)
+        if obj is None:
+            raise ValueError(f"Object with ID {obj_id} not found")
+        return obj
 
     def get_all(self):
         return list(self._storage.values())
 
     def update(self, obj_id, data):
         obj = self.get(obj_id)
-        if obj:
-            obj.update(data)  # Actualiza los atributos directamente en el objeto almacenado
+        for key, value in data.items():
+            setattr(obj, key, value)  # Actualiza los atributos directamente en el objeto almacenado
 
     def delete(self, obj_id):
         if obj_id in self._storage:

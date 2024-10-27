@@ -2,9 +2,10 @@ from flask_restx import Namespace, Resource, fields
 from app.services import HBnBFacade
 from app import repository
 
+# Crear un Namespace para las operaciones de reseñas
 api = Namespace('reviews', description='Review operations')
 
-# Define the review model for input validation and documentation
+# Definir el modelo de reseña para la validación de entrada y documentación
 review_model = api.model('Review', {
     'text': fields.String(required=True, description='Text of the review'),
     'rating': fields.Integer(required=True, description='Rating of the place (1-5)'),
@@ -12,15 +13,17 @@ review_model = api.model('Review', {
     'place_id': fields.String(required=True, description='ID of the place')
 })
 
+# Instanciar el facade para manejar las operaciones de reseñas
 facade = HBnBFacade(repository)
 
+# Definir el recurso para la lista de reseñas
 @api.route('/')
 class ReviewList(Resource):
     @api.expect(review_model)
     @api.response(201, 'Review successfully created')
     @api.response(400, 'Invalid input data')
     def post(self):
-        """Register a new review"""
+        """Registrar una nueva reseña"""
         data = api.payload
         try:
             review = facade.create_review(data)
@@ -30,16 +33,17 @@ class ReviewList(Resource):
 
     @api.response(200, 'List of reviews retrieved successfully')
     def get(self):
-        """Retrieve a list of all reviews"""
+        """Recuperar una lista de todas las reseñas"""
         reviews = facade.get_all_reviews()
         return [review.__dict__ for review in reviews], 200
 
+# Definir el recurso para una reseña específica
 @api.route('/<review_id>')
 class ReviewResource(Resource):
     @api.response(200, 'Review details retrieved successfully')
     @api.response(404, 'Review not found')
     def get(self, review_id):
-        """Get review details by ID"""
+        """Obtener detalles de la reseña por ID"""
         review = facade.get_review(review_id)
         if review:
             return review.__dict__, 200
@@ -50,7 +54,7 @@ class ReviewResource(Resource):
     @api.response(404, 'Review not found')
     @api.response(400, 'Invalid input data')
     def put(self, review_id):
-        """Update a review's information"""
+        """Actualizar la información de una reseña"""
         data = api.payload
         try:
             review = facade.update_review(review_id, data)
@@ -61,19 +65,20 @@ class ReviewResource(Resource):
     @api.response(200, 'Review deleted successfully')
     @api.response(404, 'Review not found')
     def delete(self, review_id):
-        """Delete a review"""
+        """Eliminar una reseña"""
         try:
             facade.delete_review(review_id)
             return {'message': 'Review deleted successfully'}, 200
         except ValueError:
             return {'message': 'Review not found'}, 404
 
+# Definir el recurso para obtener reseñas de un lugar específico
 @api.route('/places/<place_id>/reviews')
 class PlaceReviewList(Resource):
     @api.response(200, 'List of reviews for the place retrieved successfully')
     @api.response(404, 'Place not found')
     def get(self, place_id):
-        """Get all reviews for a specific place"""
+        """Obtener todas las reseñas para un lugar específico"""
         reviews = facade.get_reviews_by_place(place_id)
         if reviews:
             return [review.__dict__ for review in reviews], 200
