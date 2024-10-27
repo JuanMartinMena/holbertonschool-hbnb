@@ -83,10 +83,10 @@ class HBnBFacade:
         return place  # Retornar el lugar actualizado
 
     # --- Métodos para gestionar reviews ---
-    def create_review(self, review_data):
+    def create_review(self, text, rating, place_id, user_id):
         # Validar que el 'place' y 'user' existan antes de crear un review
-        place = self.place_repo.get(review_data['place_id'])
-        user = self.user_repo.get(review_data['user_id'])
+        place = self.place_repo.get(place_id)
+        user = self.user_repo.get(user_id)
 
         if place is None:
             raise ValueError("Place not found")  # Error si el lugar no existe
@@ -95,9 +95,8 @@ class HBnBFacade:
 
         review_id = str(uuid4())  # Generar un UUID único para el review
 
-        # Extraer los campos relevantes del diccionario
-        review_data['id'] = review_id  # Agregar el nuevo ID
-        review = Review(**review_data)  # Crear instancia de Review
+        # Crear instancia de Review
+        review = Review(id=review_id, text=text, rating=rating, place_id=place_id, user_id=user_id)
 
         self.review_repo.add(review)  # Guardar el review en el repositorio
         return review  # Retornar el review creado
