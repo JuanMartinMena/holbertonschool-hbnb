@@ -85,8 +85,8 @@ class HBnBFacade:
     # --- Métodos para gestionar reviews ---
     def create_review(self, review_data):
         # Validar que el 'place' y 'user' existan antes de crear un review
-        place = self.place_repo.get(review_data['place'])
-        user = self.user_repo.get(review_data['user'])
+        place = self.place_repo.get(review_data['place_id'])
+        user = self.user_repo.get(review_data['user_id'])
 
         if place is None:
             raise ValueError("Place not found")  # Error si el lugar no existe
@@ -116,11 +116,11 @@ class HBnBFacade:
         return review  # Retornar el review actualizado
 
     def delete_review(self, review_id):
-        review = self.review_repo.get(review_id)  # Obtener review por ID
+        review = self.review_repo.get(review_id)  # Buscar review por ID
         if review is None:
             raise ValueError("Review not found")  # Error si el review no existe
-        self.review_repo.delete(review_id)  # Asumir que tienes un método delete en el repositorio
+        self.review_repo.delete(review_id)  # Eliminar review del repositorio
 
     def get_reviews_by_place(self, place_id):
-        # Filtrar las reseñas por ID del lugar
-        return [review for review in self.review_repo.get_all() if review.place == place_id]
+        # Obtener todas las reseñas de un lugar específico
+        return self.review_repo.get_by_attribute('place_id', place_id)

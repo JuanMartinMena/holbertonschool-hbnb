@@ -20,3 +20,11 @@ class BaseModel:
                 updated = True
         if updated:
             self.save()  # Actualizar el timestamp de updated_at solo si hay cambios
+
+    def to_dict(self):
+        """Convertir el objeto a un diccionario serializable a JSON"""
+        return {
+            "id": self.id,
+            "created_at": self.created_at.isoformat(),  # Convierte a ISO 8601
+            "updated_at": self.updated_at.isoformat(),  # Convierte a ISO 8601
+        }

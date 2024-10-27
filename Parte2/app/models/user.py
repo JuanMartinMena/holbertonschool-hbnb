@@ -20,3 +20,14 @@ class User(BaseModel):
         self.last_name = last_name
         self.email = email
         self.is_admin = is_admin
+
+    def to_dict(self):
+        """Convertir el objeto a un diccionario serializable a JSON, incluyendo los atributos del User"""
+        user_dict = super().to_dict()  # Obtener el dict de BaseModel
+        user_dict.update({
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "email": self.email,
+            "is_admin": self.is_admin,
+        })
+        return user_dict

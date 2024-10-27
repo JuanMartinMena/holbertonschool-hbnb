@@ -18,12 +18,12 @@ class UserList(Resource):
             return {'error': 'Email ya registrado'}, 400  # Manejar error si el email ya está registrado
 
         new_user = facade.create_user(user_data)  # Crear usuario
-        return new_user.__dict__, 201  # Retornar datos del usuario creado
+        return new_user.to_dict(), 201  # Retornar datos del usuario creado usando to_dict()
 
     def get(self):
         """Obtener todos los usuarios"""
         users = facade.user_repo.get_all()  # Obtener todos los usuarios
-        return [user.__dict__ for user in users], 200  # Retornar lista de usuarios
+        return [user.to_dict() for user in users], 200  # Retornar lista de usuarios usando to_dict()
 
 
 @api.route('/<string:user_id>')
@@ -35,7 +35,7 @@ class User(Resource):
         user = facade.get_user(user_id)
         if not user:
             return {'error': 'Usuario no encontrado'}, 404  # Manejar error si el usuario no existe
-        return user.__dict__, 200  # Retornar datos del usuario
+        return user.to_dict(), 200  # Retornar datos del usuario usando to_dict()
 
     def put(self, user_id):
         """Actualizar un usuario por ID"""
@@ -43,4 +43,4 @@ class User(Resource):
         updated_user = facade.update_user(user_id, data)  # Actualizar usuario
         if not updated_user:
             return {'error': 'Usuario no encontrado'}, 404  # Manejar error si el usuario no existe
-        return updated_user.__dict__, 200  # Retornar datos del usuario actualizado
+        return updated_user.to_dict(), 200  # Retornar datos del usuario actualizado usando to_dict()
