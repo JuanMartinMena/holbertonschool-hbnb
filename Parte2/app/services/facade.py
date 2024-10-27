@@ -15,8 +15,7 @@ class HBnBFacade:
 
     # --- Métodos para gestionar usuarios ---
     def create_user(self, user_data):
-        user_id = str(uuid4())  # Generar un UUID único para el usuario
-        user = User(id=user_id, **user_data)  # Crear una instancia de usuario
+        user = User(**user_data)  # Crear una instancia de usuario
         self.user_repo.add(user)  # Guardar el usuario en el repositorio
         return user  # Retornar el usuario creado
 

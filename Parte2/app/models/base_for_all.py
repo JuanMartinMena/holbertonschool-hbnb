@@ -8,12 +8,15 @@ class BaseModel:
         self.updated_at = datetime.now()
 
     def save(self):
-        """Update the updated_at timestamp whenever the object is modified"""
+        """Actualizar el timestamp de updated_at cada vez que se modifica el objeto"""
         self.updated_at = datetime.now()
 
     def update(self, data):
-        """Update the attributes of the object based on the provided dictionary"""
+        """Actualizar los atributos del objeto según el diccionario proporcionado"""
+        updated = False
         for key, value in data.items():
-            if hasattr(self, key):
+            if hasattr(self, key) and getattr(self, key) != value:
                 setattr(self, key, value)
-        self.save()  # Update the updated_at timestamp
+                updated = True
+        if updated:
+            self.save()  # Actualizar el timestamp de updated_at solo si hay cambios
