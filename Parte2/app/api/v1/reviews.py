@@ -8,8 +8,8 @@ api = Namespace('reviews', description='Review operations')
 review_model = api.model('Review', {
     'text': fields.String(required=True, description='Text of the review'),
     'rating': fields.Integer(required=True, description='Rating of the place (1-5)'),
-    'user': fields.String(required=True, description='ID of the user'),  # Cambiado de user_id a user
-    'place': fields.String(required=True, description='ID of the place')  # Cambiado de place_id a place
+    'user_id': fields.String(required=True, description='ID of the user'),
+    'place_id': fields.String(required=True, description='ID of the place')
 })
 
 # Instanciar el facade para manejar las operaciones de reseñas
@@ -25,7 +25,12 @@ class ReviewList(Resource):
         """Registrar una nueva reseña"""
         data = api.payload
         try:
-            review = facade.create_review(data)
+            review = facade.create_review(
+                text=data['text'],
+                rating=data['rating'],
+                user_id=data['user_id'],
+                place_id=data['place_id']
+            )
             return review.__dict__, 201
         except ValueError as e:
             return {'message': str(e)}, 400
