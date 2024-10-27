@@ -5,7 +5,7 @@ api = Namespace('places', description='Place operations')
 facade = HBnBFacade()
 
 place_model = api.model('Place', {
-    'name': fields.String(required=True, description='Name of the place'),
+    'title': fields.String(required=True, description='Title of the place'),
     'description': fields.String(description='Description of the place'),
     'price': fields.Float(required=True, description='Price per night'),
     'latitude': fields.Float(required=True, description='Latitude of the place'),
@@ -24,7 +24,7 @@ class PlaceList(Resource):
         new_place = facade.create_place(place_data)
         return {
             'id': new_place.id,
-            'name': new_place.name,
+            'title': new_place.title,
             'description': new_place.description,
             'price': new_place.price,
             'latitude': new_place.latitude,
@@ -36,7 +36,7 @@ class PlaceList(Resource):
     def get(self):
         """Retrieve a list of all places"""
         places = facade.get_all_places()
-        return [{'id': p.id, 'name': p.name, 'latitude': p.latitude, 'longitude': p.longitude} for p in places], 200
+        return [{'id': p.id, 'title': p.title, 'latitude': p.latitude, 'longitude': p.longitude} for p in places], 200
 
 @api.route('/<place_id>')
 class PlaceResource(Resource):
@@ -48,7 +48,7 @@ class PlaceResource(Resource):
             place = facade.get_place(place_id)
             return {
                 'id': place.id,
-                'name': place.name,
+                'title': place.title,
                 'description': place.description,
                 'latitude': place.latitude,
                 'longitude': place.longitude,
@@ -65,7 +65,7 @@ class PlaceResource(Resource):
         """Update a place's information"""
         place_data = api.payload
         try:
-            facade.update_place(place_id, place_data)
+            updated_place = facade.update_place(place_id, place_data)
             return {'message': 'Place updated successfully'}, 200
         except ValueError:
             return {'message': 'Place not found'}, 404

@@ -55,10 +55,10 @@ class HBnBFacade:
         self.amenity_repo.update(amenity_id, amenity_data)  # Guarda los cambios en el repositorio
         return amenity
 
-    # --- Métodos para gestionar lugares ---
+        # --- Métodos para gestionar lugares ---
     def create_place(self, place_data):
         place_id = str(uuid4())  # Generar un UUID único para el lugar
-        place = Place(id=place_id, **place_data)  # Crea una nueva instancia de Place
+        place = Place(id=place_id, **place_data)
         self.place_repo.add(place)  # Guardar el lugar en el repositorio
         return place
 
