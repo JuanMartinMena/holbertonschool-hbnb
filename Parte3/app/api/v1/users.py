@@ -1,6 +1,6 @@
 # api/v1/users.py
 from flask_restx import Namespace, Resource, fields
-from app.services.facade import HBnBFacade
+from app.services import facade
 
 api = Namespace('users', description='User operations')
 
@@ -11,7 +11,6 @@ user_model = api.model('User', {
     'email': fields.String(required=True, description='Email of the user')
 })
 
-facade = HBnBFacade()
 
 @api.route('/')
 class UserList(Resource):
@@ -26,11 +25,9 @@ class UserList(Resource):
             return {'error': 'Email already registered'}, 400
 
         new_user = facade.create_user(user_data)
+        
         return {
-            'id': new_user.id,
-            'first_name': new_user.first_name,
-            'last_name': new_user.last_name,
-            'email': new_user.email
+            'id': new_user.id
         }, 201
 
     @api.response(200, 'Users list retrieved successfully')
