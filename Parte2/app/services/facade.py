@@ -64,12 +64,16 @@ class HBnBFacade:
         """Obtiene todas las amenidades"""
         return self.amenity_repo.get_all()
 
-    def update_amenity(self, amenity_id, amenity_data):
-        """Actualiza una amenidad"""
+    def update_amenity(self, amenity_id, data):
+        """Actualiza una amenidad existente"""
+        # Primero, obtén la amenidad existente
         amenity = self.amenity_repo.get(amenity_id)
-        if amenity is None:
+        if not amenity:
             raise ValueError("Amenity not found")
-        amenity.update(amenity_data)
+    
+        # Actualiza la amenidad con los datos nuevos
+        amenity.update(data)
+        # Guarda los cambios en el repositorio
         self.amenity_repo.update(amenity)
         return amenity
 

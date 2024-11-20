@@ -70,7 +70,8 @@ class Amenity(Resource):
             # Llamada al servicio para actualizar la amenidad
             updated_amenity = facade.update_amenity(amenity_id, data)
             if updated_amenity:
-                return {'message': 'Amenity updated successfully'}, 200
+                # Devuelve la amenidad actualizada
+                return updated_amenity.to_dict(), 200
             return {'message': 'Amenity not found'}, 404
         except ValueError as e:
             # Manejo de errores en caso de datos inválidos
