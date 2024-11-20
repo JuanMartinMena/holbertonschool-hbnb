@@ -1,4 +1,4 @@
-from Parte2.app.models import BaseModel
+from app.models.base_for_all import BaseModel
 from app.models.place import Place
 from app.models.user import User
 
@@ -7,5 +7,13 @@ class Review(BaseModel):
         super().__init__()
         self.text = text
         self.rating = rating
-        self.place = place  # Validar que el lugar exista
-        self.user = user  # Validar que el usuario exista
+
+        # Validar que el lugar sea una instancia de Place
+        if not isinstance(place, Place):
+            raise ValueError("place debe ser una instancia de Place")
+        self.place = place
+
+        # Validar que el usuario sea una instancia de User
+        if not isinstance(user, User):
+            raise ValueError("user debe ser una instancia de User")
+        self.user = user

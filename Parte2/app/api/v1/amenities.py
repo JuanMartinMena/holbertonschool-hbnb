@@ -18,6 +18,7 @@ class AmenityList(Resource):
         """Registrar una nueva amenidad"""
         data = request.json
         try:
+            # Llamada al servicio para crear una nueva amenidad
             new_amenity = facade.create_amenity(data)
             return jsonify(id=new_amenity.id, name=new_amenity.name), 201
         except ValueError as e:
@@ -36,6 +37,7 @@ class AmenityResource(Resource):
     def get(self, amenity_id):
         """Obtener detalles de una amenidad por ID"""
         try:
+            # Llamada al servicio para obtener una amenidad por su ID
             amenity = facade.get_amenity(amenity_id)
             return jsonify(id=amenity.id, name=amenity.name), 200
         except ValueError:
@@ -49,7 +51,9 @@ class AmenityResource(Resource):
         """Actualizar la información de una amenidad"""
         data = request.json
         try:
+            # Llamada al servicio para actualizar la amenidad
             updated_amenity = facade.update_amenity(amenity_id, data)
             return {'message': 'Amenity updated successfully'}, 200
         except ValueError as e:
+            # Si la amenidad no se encuentra o el error no es específico, se devuelve un código adecuado
             return {'message': str(e)}, 404 if 'not found' in str(e) else 400
