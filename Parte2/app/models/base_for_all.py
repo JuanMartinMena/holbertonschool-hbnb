@@ -19,3 +19,13 @@ class BaseModel:
             else:
                 print(f"Warning: Attribute '{key}' does not exist on {self.__class__.__name__}.")
         self.save()  # Actualiza el timestamp de updated_at después de modificar el objeto
+    
+    def to_dict(self):
+        """Convierte el objeto en un diccionario adecuado para JSON"""
+        # Asegúrate de que las fechas se conviertan a cadenas de texto para ser serializadas en JSON
+        return {
+            "id": self.id,
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat(),
+            "name": getattr(self, "name", None)  # Asegura que 'name' esté presente si existe en la clase
+        }

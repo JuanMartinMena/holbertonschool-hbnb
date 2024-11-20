@@ -22,6 +22,7 @@ class AmenityList(Resource):
         try:
             # Llamada al servicio para crear una nueva amenidad
             new_amenity = facade.create_amenity(data)
-            return jsonify(id=new_amenity.id, name=new_amenity.name), 201
+            # Usamos el método to_dict() para devolver la representación del objeto
+            return jsonify(new_amenity.to_dict()), 201  # Devuelve la representación JSON de la nueva amenidad
         except ValueError as e:
             return {'message': str(e)}, 400
