@@ -29,7 +29,6 @@ class HBnBFacade:
 
     def update_user(self, user_id, data):
         """Actualiza los datos de un usuario"""
-        # Verifica si los datos a actualizar son correctos
         valid_keys = ['first_name', 'last_name', 'email', 'is_admin']
         for key in data.keys():
             if key not in valid_keys:
@@ -39,8 +38,7 @@ class HBnBFacade:
         if not user:
             return None
 
-        # Actualizamos el usuario con los datos proporcionados
-        user.update(data)  # Esto actualiza los atributos del objeto usuario
+        user.update(data)  # Actualiza los atributos del objeto usuario
         self.user_repo.update(user_id, data)  # Actualiza el repositorio en memoria
         return user
 
@@ -75,21 +73,18 @@ class HBnBFacade:
         self.amenity_repo.update(amenity)
         return amenity
 
-# --- Métodos para gestionar lugares (places) ---
-
+    # --- Métodos para gestionar lugares (places) ---
     def create_place(self, place_data):
         """Crea un lugar y lo guarda en el repositorio"""
-        # Validar que el propietario existe
         owner = self.user_repo.get(place_data['user_id'])
         if not owner:
             raise ValueError("Invalid user ID for owner")
 
-        # Validar amenidades si se proporcionan
         if 'amenities' in place_data:
             amenities = [self.amenity_repo.get(amenity_id) for amenity_id in place_data['amenities']]
             if None in amenities:
                 raise ValueError("One or more amenity IDs are invalid")
-            place_data['amenities'] = amenities  # Reemplazar IDs con objetos
+            place_data['amenities'] = amenities
 
         place = Place(**place_data)
         place.owner = owner
@@ -115,14 +110,12 @@ class HBnBFacade:
         if place is None:
             raise ValueError("Place not found")
 
-        # Validar propietario si se actualiza
         if 'user_id' in place_data:
             owner = self.user_repo.get(place_data['user_id'])
             if not owner:
                 raise ValueError("Invalid user ID for owner")
             place_data['owner'] = owner
 
-        # Validar amenidades si se actualizan
         if 'amenities' in place_data:
             amenities = [self.amenity_repo.get(amenity_id) for amenity_id in place_data['amenities']]
             if None in amenities:
@@ -143,17 +136,17 @@ class HBnBFacade:
     # --- Métodos para gestionar reviews ---
     def create_review(self, review_data):
         """Crea una nueva review y la guarda en el repositorio"""
-        user = self.user_repo.get(review_data['user'])  # Validar que el usuario existe
+        user = self.user_repo.get(review_data['user'])
         if not user:
             raise ValueError("Invalid user ID for review")
 
-        place = self.place_repo.get(review_data['place'])  # Validar que el lugar existe
+        place = self.place_repo.get(review_data['place'])
         if not place:
             raise ValueError("Invalid place ID for review")
         
         review = Review(**review_data)
         self.review_repo.add(review)
-        place.add_review(review)  # Añadir la review al lugar
+        place.add_review(review)
         return review
 
     def get_review(self, review_id):
