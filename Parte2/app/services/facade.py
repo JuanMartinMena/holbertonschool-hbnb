@@ -65,17 +65,11 @@ class HBnBFacade:
         return self.amenity_repo.get_all()
 
     def update_amenity(self, amenity_id, data):
-        """Actualiza una amenidad existente"""
-        # Primero, obtén la amenidad existente
-        amenity = self.amenity_repo.get(amenity_id)
-        if not amenity:
-            raise ValueError("Amenity not found")
-    
-        # Actualiza la amenidad con los datos nuevos
+        amenity = self.get_amenity(amenity_id)
         amenity.update(data)
-        # Guarda los cambios en el repositorio
         self.amenity_repo.update(amenity)
         return amenity
+
 
     # --- Métodos para gestionar lugares (places) ---
     def create_place(self, place_data):

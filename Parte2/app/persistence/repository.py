@@ -1,78 +1,63 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
 
-# Clase abstracta Repository que define las operaciones CRUD y búsqueda
+# Excepciones personalizadas
+class EntityNotFoundError(Exception):
+    pass
+
 class Repository(ABC):
     @abstractmethod
     def add(self, obj):
-        """Agrega un objeto al repositorio"""
         pass
 
     @abstractmethod
     def get(self, obj_id):
-        """Obtiene un objeto por su ID"""
         pass
 
     @abstractmethod
     def get_all(self):
-        """Obtiene todos los objetos del repositorio"""
         pass
 
     @abstractmethod
-    def update(self, obj_id, data):
-        """Actualiza un objeto con el ID proporcionado"""
+    def update(self, obj):
         pass
 
     @abstractmethod
     def delete(self, obj_id):
-        """Elimina un objeto por su ID"""
         pass
 
     @abstractmethod
     def get_by_attribute(self, attr_name, attr_value):
-        """Obtiene un objeto buscando por un atributo y su valor"""
         pass
 
 
-# Implementación de Repository utilizando almacenamiento en memoria
 class InMemoryRepository(Repository):
     def __init__(self):
-        """Inicializa el repositorio en memoria con un diccionario"""
         self._storage = {}
 
     def add(self, obj):
-        """Agrega un objeto al almacenamiento en memoria"""
         self._storage[obj.id] = obj
 
     def get(self, obj_id):
-        """Obtiene un objeto por su ID del almacenamiento en memoria"""
         return self._storage.get(obj_id)
 
     def get_all(self):
-        """Obtiene todos los objetos almacenados"""
         return list(self._storage.values())
 
-    def update(self, obj_id, data):
-        """Actualiza un objeto existente en el almacenamiento"""
-        obj = self.get(obj_id)
-        if obj:
-            # Actualiza los atributos del objeto con los nuevos datos
-            if 'first_name' in data:
-                obj.first_name = data['first_name']
-            if 'last_name' in data:
-                obj.last_name = data['last_name']
-            if 'email' in data:
-                obj.email = data['email']
-            # Actualiza el campo de fecha de actualización (si lo tiene)
-            obj.updated_at = datetime.now()
-            return obj
-        return None
+    def update(self, obj):
+        if obj.id in self._storage:
+            self._storage[obj.id] = obj
+        else:
+            raise EntityNotFoundError(f"Object with ID {obj.id} not found")
 
     def delete(self, obj_id):
-        """Elimina un objeto del almacenamiento en memoria"""
         if obj_id in self._storage:
             del self._storage[obj_id]
+        else:
+            raise EntityNotFoundError(f"Object with ID {obj_id} not found")
 
     def get_by_attribute(self, attr_name, attr_value):
-        """Busca un objeto por un atributo específico"""
-        return next((obj for obj in self._storage.values() if getattr(obj, attr_name) == attr_value), None)
+        return next(
+            (obj for obj in self._storage.values() if getattr(obj, attr_name, None) == attr_value),
+            None
+        )
