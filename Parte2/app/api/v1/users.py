@@ -67,12 +67,20 @@ class UserResource(Resource):
     def put(self, user_id):
         """Actualizar los detalles de un usuario"""
         update_data = api.payload
-        updated_user = facade.update_user(user_id, update_data)
-        if not updated_user:
-            return {'error': 'User not found'}, 404
-        return {
-            'id': updated_user.id,
-            'first_name': updated_user.first_name,
-            'last_name': updated_user.last_name,
-            'email': updated_user.email
-        }, 200
+        
+        try:
+            # Actualizar el usuario usando el Facade
+            updated_user = facade.update_user(user_id, update_data)
+            if not updated_user:
+                return {'error': 'User not found'}, 404
+
+            return {
+                'id': updated_user.id,
+                'first_name': updated_user.first_name,
+                'last_name': updated_user.last_name,
+                'email': updated_user.email
+            }, 200
+        
+        except ValueError as e:
+            # En caso de que haya un error de validación o clave no válida
+            return {'error': str(e)}, 400

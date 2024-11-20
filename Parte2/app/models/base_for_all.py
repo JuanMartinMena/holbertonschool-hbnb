@@ -16,4 +16,6 @@ class BaseModel:
         for key, value in data.items():
             if hasattr(self, key):  # Verifica que el atributo exista en el objeto
                 setattr(self, key, value)
+            else:
+                print(f"Warning: Attribute '{key}' does not exist on {self.__class__.__name__}.")
         self.save()  # Actualiza el timestamp de updated_at después de modificar el objeto

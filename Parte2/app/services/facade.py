@@ -7,7 +7,7 @@ from app.persistence.repository import InMemoryRepository
 class HBnBFacade:
     def __init__(self):
         # Inicialización de repositorios para las distintas entidades
-        self.user_repo = InMemoryRepository() #Repostiorio para users
+        self.user_repo = InMemoryRepository()  # Repositorio para usuarios
         self.amenity_repo = InMemoryRepository()  # Repositorio para amenities
         self.place_repo = InMemoryRepository()  # Repositorio para lugares
         self.review_repo = InMemoryRepository()  # Repositorio para reviews
@@ -29,10 +29,17 @@ class HBnBFacade:
 
     def update_user(self, user_id, data):
         """Actualiza los datos de un usuario"""
+        # Verifica si los datos a actualizar son correctos
+        valid_keys = ['first_name', 'last_name', 'email', 'is_admin']
+        for key in data.keys():
+            if key not in valid_keys:
+                raise ValueError(f"Invalid attribute: {key}")
+        
         user = self.user_repo.get(user_id)
         if not user:
             return None
-        user.update(**data)
+
+        user.update(data)  # Usa el diccionario directamente
         self.user_repo.update(user)
         return user
     
@@ -63,7 +70,7 @@ class HBnBFacade:
         amenity = self.amenity_repo.get(amenity_id)
         if amenity is None:
             raise ValueError("Amenity not found")
-        amenity.update(**amenity_data)
+        amenity.update(amenity_data)
         self.amenity_repo.update(amenity)
         return amenity
 
@@ -95,7 +102,7 @@ class HBnBFacade:
         place = self.place_repo.get(place_id)
         if place is None:
             raise ValueError("Place not found")
-        place.update(**place_data)
+        place.update(place_data)
         self.place_repo.update(place)
         return place
 
@@ -131,6 +138,6 @@ class HBnBFacade:
         review = self.review_repo.get(review_id)
         if review is None:
             raise ValueError("Review not found")
-        review.update(**review_data)
+        review.update(review_data)
         self.review_repo.update(review)
         return review
