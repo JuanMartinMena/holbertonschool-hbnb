@@ -5,11 +5,16 @@ class Amenity(BaseModel):
         super().__init__()
         self.name = name
 
+    def update(self, amenity_data):
+        """Actualiza los atributos de la amenidad"""
+        if 'name' in amenity_data:
+            self.name = amenity_data['name']
+
     def to_dict(self):
         """Convierte el objeto Amenity a un diccionario serializable"""
         return {
             'id': self.id,
             'name': self.name,
-            'created_at': self.created_at.isoformat(),  # Asegúrate de que 'created_at' sea un objeto datetime
-            'updated_at': self.updated_at.isoformat()   # Similar para 'updated_at'
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat()
         }

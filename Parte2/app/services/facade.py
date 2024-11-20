@@ -36,15 +36,15 @@ class HBnBFacade:
 
         user = self.user_repo.get(user_id)
         if not user:
-            return None
+            raise ValueError("User not found")
 
         user.update(data)  # Actualiza los atributos del objeto usuario
-        self.user_repo.update(user_id, data)  # Actualiza el repositorio en memoria
+        self.user_repo.update(user)  # Actualiza el repositorio en memoria
         return user
 
     def get_all_users(self):
         """Obtiene todos los usuarios del repositorio"""
-        return self.user_repo.get_all()  # Esto devuelve todos los usuarios almacenados
+        return self.user_repo.get_all()
 
     # --- Métodos para gestionar amenities ---
     def create_amenity(self, amenity_data):
