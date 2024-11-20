@@ -1,5 +1,5 @@
 from flask_restx import Namespace, Resource, fields
-from flask import request, jsonify
+from flask import request
 from app.services.facade import HBnBFacade
 
 api = Namespace('amenities', description='Amenity operations')
@@ -22,7 +22,8 @@ class AmenityList(Resource):
         try:
             # Llamada al servicio para crear una nueva amenidad
             new_amenity = facade.create_amenity(data)
-            # Usamos el método to_dict() para devolver la representación del objeto
-            return jsonify(new_amenity.to_dict()), 201  # Devuelve la representación JSON de la nueva amenidad
+            # Devuelve el diccionario de la nueva amenidad y el código de estado
+            return new_amenity.to_dict(), 201
         except ValueError as e:
+            # Manejo de errores en caso de datos inválidos
             return {'message': str(e)}, 400
