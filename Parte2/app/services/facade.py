@@ -35,6 +35,10 @@ class HBnBFacade:
         user.update(**data)
         self.user_repo.update(user)
         return user
+    
+    def get_all_users(self):
+        """Obtiene todos los usuarios del repositorio"""
+        return self.user_repo.get_all()  # Esto devuelve todos los usuarios almacenados
 
     # --- Métodos para gestionar amenities ---
     def create_amenity(self, amenity_data):
