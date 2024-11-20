@@ -71,4 +71,5 @@ class PlaceResource(Resource):
             updated_place = facade.update_place(place_id, data)
             return {'message': 'Place updated successfully'}, 200
         except ValueError as e:
+            # Maneja el caso cuando no se encuentra el lugar con 404
             return {'message': str(e)}, 404 if 'not found' in str(e) else 400

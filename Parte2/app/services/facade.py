@@ -4,6 +4,7 @@ from app.models.place import Place
 from app.models.review import Review
 from app.persistence.repository import InMemoryRepository
 
+
 class HBnBFacade:
     def __init__(self):
         # Inicialización de repositorios para las distintas entidades
@@ -65,18 +66,20 @@ class HBnBFacade:
         return self.amenity_repo.get_all()
 
     def update_amenity(self, amenity_id, data):
+        """Actualiza una amenidad"""
         amenity = self.get_amenity(amenity_id)
         amenity.update(data)
         self.amenity_repo.update(amenity)
         return amenity
 
-
-    # --- Métodos para gestionar lugares (places) ---
+    # --- Métodos para gestionar lugares ---
     def create_place(self, place_data):
         """Crea un lugar y lo guarda en el repositorio"""
-        owner = self.user_repo.get(place_data['user_id'])
+        owner = self.user_repo.get(place_data['owner'])
         if not owner:
             raise ValueError("Invalid user ID for owner")
+
+        place_data['owner'] = owner
 
         if 'amenities' in place_data:
             amenities = [self.amenity_repo.get(amenity_id) for amenity_id in place_data['amenities']]
@@ -85,7 +88,6 @@ class HBnBFacade:
             place_data['amenities'] = amenities
 
         place = Place(**place_data)
-        place.owner = owner
         self.place_repo.add(place)
         return place
 
@@ -108,8 +110,8 @@ class HBnBFacade:
         if place is None:
             raise ValueError("Place not found")
 
-        if 'user_id' in place_data:
-            owner = self.user_repo.get(place_data['user_id'])
+        if 'owner' in place_data:
+            owner = self.user_repo.get(place_data['owner'])
             if not owner:
                 raise ValueError("Invalid user ID for owner")
             place_data['owner'] = owner
@@ -141,7 +143,7 @@ class HBnBFacade:
         place = self.place_repo.get(review_data['place'])
         if not place:
             raise ValueError("Invalid place ID for review")
-        
+
         review = Review(**review_data)
         self.review_repo.add(review)
         place.add_review(review)
@@ -163,6 +165,7 @@ class HBnBFacade:
         review = self.review_repo.get(review_id)
         if review is None:
             raise ValueError("Review not found")
+        
         review.update(review_data)
         self.review_repo.update(review)
         return review
