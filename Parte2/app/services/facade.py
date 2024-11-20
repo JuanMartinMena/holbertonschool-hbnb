@@ -34,15 +34,16 @@ class HBnBFacade:
         for key in data.keys():
             if key not in valid_keys:
                 raise ValueError(f"Invalid attribute: {key}")
-        
+
         user = self.user_repo.get(user_id)
         if not user:
             return None
 
-        user.update(data)  # Usa el diccionario directamente
-        self.user_repo.update(user)
+        # Actualizamos el usuario con los datos proporcionados
+        user.update(data)  # Esto actualiza los atributos del objeto usuario
+        self.user_repo.update(user_id, data)  # Actualiza el repositorio en memoria
         return user
-    
+
     def get_all_users(self):
         """Obtiene todos los usuarios del repositorio"""
         return self.user_repo.get_all()  # Esto devuelve todos los usuarios almacenados

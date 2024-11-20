@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from datetime import datetime
 
 # Clase abstracta Repository que define las operaciones CRUD y búsqueda
 class Repository(ABC):
@@ -55,7 +56,17 @@ class InMemoryRepository(Repository):
         """Actualiza un objeto existente en el almacenamiento"""
         obj = self.get(obj_id)
         if obj:
-            obj.update(data)
+            # Actualiza los atributos del objeto con los nuevos datos
+            if 'first_name' in data:
+                obj.first_name = data['first_name']
+            if 'last_name' in data:
+                obj.last_name = data['last_name']
+            if 'email' in data:
+                obj.email = data['email']
+            # Actualiza el campo de fecha de actualización (si lo tiene)
+            obj.updated_at = datetime.now()
+            return obj
+        return None
 
     def delete(self, obj_id):
         """Elimina un objeto del almacenamiento en memoria"""
