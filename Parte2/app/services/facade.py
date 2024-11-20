@@ -75,15 +75,24 @@ class HBnBFacade:
         self.amenity_repo.update(amenity)
         return amenity
 
-    # --- Métodos para gestionar lugares (places) ---
+# --- Métodos para gestionar lugares (places) ---
+
     def create_place(self, place_data):
         """Crea un lugar y lo guarda en el repositorio"""
-        owner = self.user_repo.get(place_data['owner'])  # Validar que el propietario existe
+        # Validar que el propietario existe
+        owner = self.user_repo.get(place_data['user_id'])
         if not owner:
             raise ValueError("Invalid user ID for owner")
-        
+
+        # Validar amenidades si se proporcionan
+        if 'amenities' in place_data:
+            amenities = [self.amenity_repo.get(amenity_id) for amenity_id in place_data['amenities']]
+            if None in amenities:
+                raise ValueError("One or more amenity IDs are invalid")
+            place_data['amenities'] = amenities  # Reemplazar IDs con objetos
+
         place = Place(**place_data)
-        place.owner = owner  # Asignar el propietario
+        place.owner = owner
         self.place_repo.add(place)
         return place
 
@@ -94,8 +103,10 @@ class HBnBFacade:
             raise ValueError("Place not found")
         return place
 
-    def get_all_places(self):
-        """Obtiene todos los lugares"""
+    def get_all_places(self, filters=None):
+        """Obtiene todos los lugares, opcionalmente aplicando filtros"""
+        if filters:
+            return self.place_repo.filter_by(filters)
         return self.place_repo.get_all()
 
     def update_place(self, place_id, place_data):
@@ -103,9 +114,31 @@ class HBnBFacade:
         place = self.place_repo.get(place_id)
         if place is None:
             raise ValueError("Place not found")
+
+        # Validar propietario si se actualiza
+        if 'user_id' in place_data:
+            owner = self.user_repo.get(place_data['user_id'])
+            if not owner:
+                raise ValueError("Invalid user ID for owner")
+            place_data['owner'] = owner
+
+        # Validar amenidades si se actualizan
+        if 'amenities' in place_data:
+            amenities = [self.amenity_repo.get(amenity_id) for amenity_id in place_data['amenities']]
+            if None in amenities:
+                raise ValueError("One or more amenity IDs are invalid")
+            place_data['amenities'] = amenities
+
         place.update(place_data)
         self.place_repo.update(place)
         return place
+
+    def delete_place(self, place_id):
+        """Elimina un lugar por su ID"""
+        place = self.place_repo.get(place_id)
+        if place is None:
+            raise ValueError("Place not found")
+        self.place_repo.delete(place_id)
 
     # --- Métodos para gestionar reviews ---
     def create_review(self, review_data):

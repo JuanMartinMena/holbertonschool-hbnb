@@ -15,7 +15,7 @@ place_model = api.model('Place', {
     'user_id': fields.String(required=True, description='ID of the user owning the place')
 })
 
-@api.route('/')
+@api.route('/places')
 class PlaceList(Resource):
     @api.expect(place_model)
     @api.response(201, 'Place successfully created')
