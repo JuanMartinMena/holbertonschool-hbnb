@@ -1,9 +1,7 @@
 import uuid
 from app.models.base_for_all import BaseModel
 from app.models.user import User
-from app.models.review import Review
 from app.models.amenity import Amenity
-
 
 class Place(BaseModel):
     """
@@ -36,6 +34,7 @@ class Place(BaseModel):
 
     def add_review(self, review):
         """Agrega una reseña a la lista de reseñas"""
+        from app.models.review import Review  # Importación dentro de la función
         if not isinstance(review, Review):
             raise ValueError("La reseña debe ser una instancia de Review")
         self.reviews.append(review)

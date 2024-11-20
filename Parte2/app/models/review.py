@@ -1,5 +1,4 @@
 from app.models.base_for_all import BaseModel
-from app.models.place import Place
 from app.models.user import User
 
 class Review(BaseModel):
@@ -9,6 +8,7 @@ class Review(BaseModel):
         self.rating = rating
 
         # Validar que el lugar sea una instancia de Place
+        from app.models.place import Place  # Importación dentro de la función
         if not isinstance(place, Place):
             raise ValueError("place debe ser una instancia de Place")
         self.place = place

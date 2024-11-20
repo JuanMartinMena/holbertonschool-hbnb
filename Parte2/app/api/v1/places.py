@@ -6,7 +6,7 @@ api = Namespace('places', description='Place operations')
 
 # Modelo de Place para validación de entrada
 place_model = api.model('Place', {
-    'name': fields.String(required=True, description='Name of the place'),
+    'title': fields.String(required=True, description='Title of the place'),
     'description': fields.String(required=True, description='Description of the place'),
     'price': fields.Float(required=True, description='Price per night for the place'),
     'latitude': fields.Float(required=True, description='Latitude of the place'),
@@ -25,7 +25,7 @@ class PlaceList(Resource):
         data = request.json
         try:
             new_place = facade.create_place(data)
-            return jsonify(id=new_place.id, name=new_place.name, price=new_place.price), 201
+            return jsonify(id=new_place.id, title=new_place.title, price=new_place.price), 201
         except ValueError as e:
             return {'message': str(e)}, 400
 
@@ -35,7 +35,7 @@ class PlaceList(Resource):
         places = facade.get_all_places()
         return jsonify([{
             'id': place.id,
-            'name': place.name,
+            'title': place.title,
             'price': place.price,
             'latitude': place.latitude,
             'longitude': place.longitude
@@ -51,7 +51,7 @@ class PlaceResource(Resource):
             place = facade.get_place(place_id)
             return jsonify({
                 'id': place.id,
-                'name': place.name,
+                'title': place.title,
                 'description': place.description,
                 'price': place.price,
                 'latitude': place.latitude,
