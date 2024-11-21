@@ -15,7 +15,7 @@ place_model = api.model('Place', {
     'user_id': fields.String(required=True, description='ID of the user owning the place')
 })
 
-@api.route('/places')
+@api.route('/api/v1/places')
 class PlaceList(Resource):
     @api.expect(place_model)
     @api.response(201, 'Place successfully created')
@@ -41,7 +41,7 @@ class PlaceList(Resource):
             'longitude': place.longitude
         } for place in places]), 200
 
-@api.route('/<string:place_id>')
+@api.route('/api/v1/places/<string:place_id>')
 class PlaceResource(Resource):
     @api.response(200, 'Detalles del lugar obtenidos exitosamente')
     @api.response(404, 'Lugar no encontrado')

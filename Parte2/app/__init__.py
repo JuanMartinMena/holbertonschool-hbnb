@@ -4,10 +4,14 @@ from app.api.v1.users import api as users_ns
 from app.api.v1.places import api as places_ns
 from app.api.v1.amenities import api as amenities_ns
 from app.api.v1.reviews import api as reviews_ns
+from config import config
 
-def create_app():
+def create_app(config_name='default'):
     # Crear la aplicación Flask
     app = Flask(__name__)
+
+    # Configurar la aplicación según el entorno
+    app.config.from_object(config[config_name])
 
     # Inicializar la API con Flask-RESTx
     api = Api(app, version='1.0', title='HBnB API', description='HBnB Application API')

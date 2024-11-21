@@ -75,18 +75,21 @@ class HBnBFacade:
     # --- Métodos para gestionar lugares ---
     def create_place(self, place_data):
         """Crea un lugar y lo guarda en el repositorio"""
+        # Verificar si el dueño es válido
         owner = self.user_repo.get(place_data['owner'])
         if not owner:
             raise ValueError("Invalid user ID for owner")
 
         place_data['owner'] = owner
 
+        # Verificar las amenidades (si las hay)
         if 'amenities' in place_data:
             amenities = [self.amenity_repo.get(amenity_id) for amenity_id in place_data['amenities']]
             if None in amenities:
                 raise ValueError("One or more amenity IDs are invalid")
             place_data['amenities'] = amenities
 
+        # Crear el lugar usando los datos proporcionados
         place = Place(**place_data)
         self.place_repo.add(place)
         return place
@@ -110,62 +113,25 @@ class HBnBFacade:
         if place is None:
             raise ValueError("Place not found")
 
+        # Verificar si el dueño es válido
         if 'owner' in place_data:
             owner = self.user_repo.get(place_data['owner'])
             if not owner:
                 raise ValueError("Invalid user ID for owner")
             place_data['owner'] = owner
 
-        if 'amenities' in place_data:
-            amenities = [self.amenity_repo.get(amenity_id) for amenity_id in place_data['amenities']]
-            if None in amenities:
-                raise ValueError("One or more amenity IDs are invalid")
-            place_data['amenities'] = amenities
-
+        # Actualizar el lugar con los nuevos datos
         place.update(place_data)
         self.place_repo.update(place)
         return place
 
-    def delete_place(self, place_id):
-        """Elimina un lugar por su ID"""
-        place = self.place_repo.get(place_id)
-        if place is None:
-            raise ValueError("Place not found")
-        self.place_repo.delete(place_id)
-
     # --- Métodos para gestionar reviews ---
     def create_review(self, review_data):
-        """Crea una nueva review y la guarda en el repositorio"""
-        user = self.user_repo.get(review_data['user'])
-        if not user:
-            raise ValueError("Invalid user ID for review")
-
-        place = self.place_repo.get(review_data['place'])
-        if not place:
-            raise ValueError("Invalid place ID for review")
-
+        """Crea una nueva reseña y la guarda"""
         review = Review(**review_data)
         self.review_repo.add(review)
-        place.add_review(review)
         return review
 
     def get_review(self, review_id):
-        """Obtiene una review por su ID"""
-        review = self.review_repo.get(review_id)
-        if review is None:
-            raise ValueError("Review not found")
-        return review
-
-    def get_all_reviews(self):
-        """Obtiene todas las reviews"""
-        return self.review_repo.get_all()
-
-    def update_review(self, review_id, review_data):
-        """Actualiza una review"""
-        review = self.review_repo.get(review_id)
-        if review is None:
-            raise ValueError("Review not found")
-        
-        review.update(review_data)
-        self.review_repo.update(review)
-        return review
+        """Obtiene una reseña por su ID"""
+        return self.review_repo.get(review_id)
