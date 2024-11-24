@@ -9,7 +9,7 @@ class Place(BaseModel):
         self.latitude = latitude
         self.longitude = longitude
         self.owner_id = owner_id
-        self.amenities = amenities
+        self.amenities = amenities if amenities is not None else []
 
     @property
     def price(self):
