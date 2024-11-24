@@ -1,23 +1,42 @@
-# app/models/place.py
 from app.models.base_for_all import BaseModel
-from app.models.amenity import Amenity
-from app.models.user import User
 
 class Place(BaseModel):
-    def __init__(self, title, description, price, latitude, longitude, owner, amenities=None):
+    def __init__(self, title, description, price, latitude, longitude, owner_id, amenities):
         super().__init__()
         self.title = title
         self.description = description
         self.price = price
         self.latitude = latitude
         self.longitude = longitude
-        self.owner = owner  # Relación con User
-        self.amenities = amenities if amenities else []  # Relación con Amenity
+        self.owner_id = owner_id
+        self.amenities = amenities
 
-    def update(self, data):
-        for key, value in data.items():
-            if hasattr(self, key):
-                setattr(self, key, value)
+    @property
+    def price(self):
+        return self._price
 
-    def __repr__(self):
-        return f"<Place {self.title}>"
+    @price.setter
+    def price(self, value):
+        if value < 0:
+            raise ValueError("Price must be non-negative.")
+        self._price = value
+
+    @property
+    def latitude(self):
+        return self._latitude
+
+    @latitude.setter
+    def latitude(self, value):
+        if not (-90 <= value <= 90):
+            raise ValueError("Latitude must be between -90 and 90.")
+        self._latitude = value
+
+    @property
+    def longitude(self):
+        return self._longitude
+
+    @longitude.setter
+    def longitude(self, value):
+        if not (-180 <= value <= 180):
+            raise ValueError("Longitude must be between -180 and 180.")
+        self._longitude = value
