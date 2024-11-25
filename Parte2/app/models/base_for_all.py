@@ -19,11 +19,3 @@ class BaseModel:
             else:
                 print(f"Warning: Attribute '{key}' does not exist on {self.__class__.__name__}.")
         self.save()  # Actualiza el timestamp de updated_at después de modificar el objeto
-
-    def to_dict(self):
-        """Convierte el objeto a un diccionario, incluidos los atributos 'created_at' y 'updated_at'"""
-        obj_dict = self.__dict__.copy()  # Crea una copia de los atributos del objeto
-        # Aseguramos que las fechas estén en formato ISO string
-        obj_dict['created_at'] = self.created_at.isoformat() if self.created_at else None
-        obj_dict['updated_at'] = self.updated_at.isoformat() if self.updated_at else None
-        return obj_dict
