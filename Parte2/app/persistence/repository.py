@@ -1,9 +1,4 @@
 from abc import ABC, abstractmethod
-from datetime import datetime
-
-# Excepciones personalizadas
-class EntityNotFoundError(Exception):
-    pass
 
 class Repository(ABC):
     @abstractmethod
@@ -19,7 +14,7 @@ class Repository(ABC):
         pass
 
     @abstractmethod
-    def update(self, obj):
+    def update(self, obj_id, data):
         pass
 
     @abstractmethod
@@ -44,20 +39,19 @@ class InMemoryRepository(Repository):
     def get_all(self):
         return list(self._storage.values())
 
-    def update(self, obj):
-        if obj.id in self._storage:
-            self._storage[obj.id] = obj
-        else:
-            raise EntityNotFoundError(f"Object with ID {obj.id} not found")
+    def update(self, obj_id, data):
+        obj = self.get(obj_id)
+        if not obj:
+            raise ValueError(f"Object with id {obj_id} not found")
+
+        for key, value in data.items():
+            setattr(obj, key, value)
+        return obj  # Retorna el objeto actualizado
+
 
     def delete(self, obj_id):
         if obj_id in self._storage:
             del self._storage[obj_id]
-        else:
-            raise EntityNotFoundError(f"Object with ID {obj_id} not found")
 
     def get_by_attribute(self, attr_name, attr_value):
-        return next(
-            (obj for obj in self._storage.values() if getattr(obj, attr_name, None) == attr_value),
-            None
-        )
+        return next((obj for obj in self._storage.values() if getattr(obj, attr_name) == attr_value), None)

@@ -1,129 +1,119 @@
-from flask import jsonify
+from app.persistence.repository import InMemoryRepository
 from app.models.user import User
 from app.models.amenity import Amenity
 from app.models.place import Place
-from app.models.review import Review
-from app.persistence.repository import InMemoryRepository
+from flask import jsonify
 
 class HBnBFacade:
     def __init__(self):
-        # Inicialización de repositorios para las distintas entidades
-        self.user_repo = InMemoryRepository()  # Repositorio para usuarios
-        self.amenity_repo = InMemoryRepository()  # Repositorio para amenities
-        self.place_repo = InMemoryRepository()  # Repositorio para lugares
-        self.review_repo = InMemoryRepository()  # Repositorio para reviews
+        # Usamos los repositorios correctos para cada entidad
+        self.user_repo = InMemoryRepository()
+        self.place_repo = InMemoryRepository()
+        self.amenity_repo = InMemoryRepository()
 
-    # --- Métodos para gestionar usuarios ---
+    # Métodos relacionados con los usuarios
     def create_user(self, user_data):
         user = User(**user_data)
         self.user_repo.add(user)
-        return jsonify(user), 201
+        return user
 
     def get_user(self, user_id):
-        user = self.user_repo.get(user_id)
-        if not user:
-            return jsonify({"error": "User not found"}), 404
-        return jsonify(user)
+        return self.user_repo.get(user_id)
 
     def get_user_by_email(self, email):
-        user = self.user_repo.get_by_attribute('email', email)
-        if not user:
-            return jsonify({"error": "User not found"}), 404
-        return jsonify(user)
-
-    def update_user(self, user_id, data):
-        valid_keys = ['first_name', 'last_name', 'email', 'is_admin']
-        for key in data.keys():
-            if key not in valid_keys:
-                return jsonify({"error": f"Invalid attribute: {key}"}), 400
-
-        user = self.user_repo.get(user_id)
-        if not user:
-            return jsonify({"error": "User not found"}), 404
-
-        user.update(data)
-        self.user_repo.update(user)
-        return jsonify(user)
+        return self.user_repo.get_by_attribute('email', email)
 
     def get_all_users(self):
-        users = self.user_repo.get_all()
-        return jsonify(users)
+        return self.user_repo.get_all()
 
-    # --- Métodos para gestionar amenities ---
+    def update_user(self, user_id, user_data):
+        user = self.get_user(user_id)
+        if not user:
+            raise ValueError(f"User with id {user_id} not found")
+        updated_user = self.user_repo.update(user_id, user_data)
+        return updated_user
+    
+    # Métodos relacionados con los amenities
     def create_amenity(self, amenity_data):
         amenity = Amenity(**amenity_data)
         self.amenity_repo.add(amenity)
-        return jsonify(amenity), 201
+        return amenity
 
     def get_amenity(self, amenity_id):
-        amenity = self.amenity_repo.get(amenity_id)
-        if not amenity:
-            return jsonify({"error": "Amenity not found"}), 404
-        return jsonify(amenity)
+        return self.amenity_repo.get(amenity_id)
 
     def get_all_amenities(self):
-        amenities = self.amenity_repo.get_all()
-        return jsonify(amenities)
+        return self.amenity_repo.get_all()
 
-    def update_amenity(self, amenity_id, data):
-        amenity = self.amenity_repo.get(amenity_id)
+    def update_amenity(self, amenity_id, amenity_data):
+        amenity = self.get_amenity(amenity_id)
         if not amenity:
-            return jsonify({"error": "Amenity not found"}), 404
-
-        amenity.update(data)
-        self.amenity_repo.update(amenity)
-        return jsonify(amenity)
-
-    # --- Métodos para gestionar lugares ---
+            return None
+        for key, value in amenity_data.items():
+            setattr(amenity, key, value)
+        self.amenity_repo.update(amenity_id, amenity_data)
+        return amenity
+    
+    # Métodos relacionados con los lugares (places)
     def create_place(self, place_data):
-        # Validar que el usuario asociado al lugar exista
-        user = self.user_repo.get(place_data.get("user_id"))
-        if not user:
-            return jsonify({"error": "User not found for this place"}), 404
+        # Verificar si el dueño (owner) existe
+        user = self.user_repo.get(place_data['owner_id'])
 
-        place = Place(**place_data)
+        # Si el owner no existe, crear un nuevo usuario (owner)
+        if not user:
+            owner_data = {
+                'first_name': place_data.get('owner_first_name', 'Unknown'),
+                'last_name': place_data.get('owner_last_name', 'Unknown'),
+                'email': place_data.get('owner_email', 'default@example.com')
+            }
+            user = self.create_user(owner_data)  # Crear al owner
+
+        # Obtener las amenidades, si están presentes en place_data
+        amenities = []
+        if 'amenities' in place_data:
+            amenities = [self.amenity_repo.get(amenity_id) for amenity_id in place_data['amenities']]
+
+        # Crear el lugar (Place)
+        place = Place(
+            title=place_data['title'],
+            description=place_data.get('description', ''),
+            price=place_data['price'],
+            latitude=place_data['latitude'],
+            longitude=place_data['longitude'],
+            owner_id=user.id,  # Asignar el ID del usuario (owner)
+            amenities=amenities  # Lista de amenidades, vacía si no hay
+        )
+
+        # Añadir el lugar al repositorio
         self.place_repo.add(place)
-        return jsonify(place), 201
+
+        # Retorna el diccionario del lugar como JSON con código de estado 201
+        return jsonify(place.to_dict()), 201  # Llamamos a `to_dict()` para obtener el formato JSON adecuado
 
     def get_place(self, place_id):
         place = self.place_repo.get(place_id)
         if not place:
-            return jsonify({"error": "Place not found"}), 404
-        return jsonify(place)
+            raise ValueError("Place not found")
+
+        # Obtener detalles del owner y las amenidades
+        owner = self.user_repo.get(place.owner_id)
+        amenities = [self.amenity_repo.get(amenity.id) for amenity in place.amenities]
+        return place, owner, amenities
 
     def get_all_places(self):
-        places = self.place_repo.get_all()
-        return jsonify(places)
+        return self.place_repo.get_all()
 
-    def update_place(self, place_id, data):
-        valid_keys = ['name', 'description', 'price', 'latitude', 'longitude', 'amenities']
-        for key in data.keys():
-            if key not in valid_keys:
-                return jsonify({"error": f"Invalid attribute: {key}"}), 400
-
+    def update_place(self, place_id, place_data):
         place = self.place_repo.get(place_id)
         if not place:
-            return jsonify({"error": "Place not found"}), 404
+            raise ValueError("Place not found")
 
-        # Actualizar el lugar
-        place.update(data)
-        self.place_repo.update(place)
-        return jsonify(place)
+        # Actualizar los datos del lugar
+        place.title = place_data.get('title', place.title)
+        place.description = place_data.get('description', place.description)
+        place.price = place_data.get('price', place.price)
+        place.latitude = place_data.get('latitude', place.latitude)
+        place.longitude = place_data.get('longitude', place.longitude)
 
-    # --- Métodos para gestionar reviews ---
-    def create_review(self, review_data):
-        # Validar que el lugar y el usuario asociados a la reseña existan
-        place = self.place_repo.get(review_data.get("place_id"))
-        user = self.user_repo.get(review_data.get("user_id"))
-        if not place or not user:
-            return jsonify({"error": "Place or User not found for this review"}), 404
-
-        review = Review(**review_data)
-        self.review_repo.add(review)
-        return jsonify(review), 201
-
-    def get_review(self, review_id):
-        review = self.review_repo.get(review_id)
-        if not review:
-            return jsonify({"error": "Review not found"}), 404
-        return jsonify(review)
+        self.place_repo.update(place_id, place_data)
+        return place

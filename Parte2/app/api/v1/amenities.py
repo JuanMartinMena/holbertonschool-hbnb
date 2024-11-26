@@ -1,81 +1,54 @@
 from flask_restx import Namespace, Resource, fields
-from flask import request, jsonify
+from flask import request
 from app.services.facade import HBnBFacade
 
 api = Namespace('amenities', description='Amenity operations')
+facade = HBnBFacade()
 
 # Modelo de Amenity para validación de entrada
 amenity_model = api.model('Amenity', {
     'name': fields.String(required=True, description='Name of the amenity')
 })
 
-facade = HBnBFacade()  # Crear la instancia de HBnBFacade
-
 @api.route('/')
 class AmenityList(Resource):
-    # Método para registrar una nueva amenidad
     @api.expect(amenity_model)
     @api.response(201, 'Amenity successfully created')
     @api.response(400, 'Invalid input data')
     def post(self):
-        """Registrar una nueva amenidad"""
-        data = request.json
+        """Register a new amenity"""
         try:
-            # Llamada al servicio para crear una nueva amenidad
-            new_amenity = facade.create_amenity(data)
-            # Devuelve el diccionario de la nueva amenidad y el código de estado
-            return new_amenity.to_dict(), 201
-        except ValueError as e:
-            # Manejo de errores en caso de datos inválidos
-            return {'message': str(e)}, 400
+            amenity_data = request.json
+            amenity = facade.create_amenity(amenity_data)
+            return {"id": amenity.id, "name": amenity.name}, 201
+        except Exception as e:
+            return {"error": str(e)}, 400
 
-    # Método para obtener todas las amenidades
     @api.response(200, 'List of amenities retrieved successfully')
     def get(self):
-        """Obtener todas las amenidades"""
-        try:
-            amenities = facade.get_all_amenities()
-            # Devuelve la lista de amenidades
-            return jsonify([amenity.to_dict() for amenity in amenities])
-        except Exception as e:
-            # Manejo de errores en caso de fallo en la consulta
-            return {'message': str(e)}, 500
+        """Retrieve a list of all amenities"""
+        amenities = facade.get_all_amenities()
+        return [{"id": a.id, "name": a.name} for a in amenities], 200
 
-
-@api.route('/<string:amenity_id>')
-class Amenity(Resource):
-    # Método para obtener los detalles de una amenidad por ID
-    @api.response(200, 'Amenity retrieved successfully')
+@api.route('/<amenity_id>')
+class AmenityResource(Resource):
+    @api.response(200, 'Amenity details retrieved successfully')
     @api.response(404, 'Amenity not found')
     def get(self, amenity_id):
-        """Obtener los detalles de una amenidad"""
-        try:
-            amenity = facade.get_amenity(amenity_id)
-            if amenity:
-                return jsonify(amenity.to_dict())
-            return {'message': 'Amenity not found'}, 404
-        except Exception as e:
-            # Manejo de errores en caso de fallo en la consulta
-            return {'message': str(e)}, 500
+        """Get amenity details by ID"""
+        amenity = facade.get_amenity(amenity_id)
+        if not amenity:
+            return {"error": "Amenity not found"}, 404
+        return {"id": amenity.id, "name": amenity.name}, 200
 
-    # Método para actualizar una amenidad existente por ID
     @api.expect(amenity_model)
     @api.response(200, 'Amenity updated successfully')
-    @api.response(400, 'Invalid input data')
     @api.response(404, 'Amenity not found')
+    @api.response(400, 'Invalid input data')
     def put(self, amenity_id):
-        """Actualizar la información de una amenidad"""
-        data = request.json
-        try:
-            # Llamada al servicio para actualizar la amenidad
-            updated_amenity = facade.update_amenity(amenity_id, data)
-            if updated_amenity:
-                # Devuelve la amenidad actualizada
-                return updated_amenity.to_dict(), 200
-            return {'message': 'Amenity not found'}, 404
-        except ValueError as e:
-            # Manejo de errores en caso de datos inválidos
-            return {'message': str(e)}, 400
-        except Exception as e:
-            # Manejo de errores generales
-            return {'message': str(e)}, 500
+        """Update an amenity's information"""
+        amenity_data = request.json
+        amenity = facade.update_amenity(amenity_id, amenity_data)
+        if not amenity:
+            return {"error": "Amenity not found"}, 404
+        return {"message": "Amenity updated successfully"}, 200

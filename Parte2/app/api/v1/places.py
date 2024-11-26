@@ -1,14 +1,22 @@
 from flask_restx import Namespace, Resource, fields
-from flask import request
 from app.services.facade import HBnBFacade
 
-# Instancia del namespace
 api = Namespace('places', description='Place operations')
 
-# Instancia de la fachada
-facade = HBnBFacade()
+# Definición de modelos para entidades relacionadas (Owner, Amenity)
+amenity_model = api.model('PlaceAmenity', {
+    'id': fields.String(description='Amenity ID'),
+    'name': fields.String(description='Name of the amenity')
+})
 
-# Modelo para validar y documentar los datos de entrada/salida
+user_model = api.model('PlaceUser', {
+    'id': fields.String(description='User ID'),
+    'first_name': fields.String(description='First name of the owner'),
+    'last_name': fields.String(description='Last name of the owner'),
+    'email': fields.String(description='Email of the owner')
+})
+
+# Definición del modelo de Place para validación de entrada
 place_model = api.model('Place', {
     'title': fields.String(required=True, description='Title of the place'),
     'description': fields.String(description='Description of the place'),
@@ -16,10 +24,11 @@ place_model = api.model('Place', {
     'latitude': fields.Float(required=True, description='Latitude of the place'),
     'longitude': fields.Float(required=True, description='Longitude of the place'),
     'owner_id': fields.String(required=True, description='ID of the owner'),
-    'amenities': fields.List(fields.String, required=True, description="List of amenity IDs")
+    'amenities': fields.List(fields.String, required=True, description="List of amenities ID's")
 })
 
-# Rutas
+facade = HBnBFacade()
+
 @api.route('/')
 class PlaceList(Resource):
     @api.expect(place_model)
@@ -27,21 +36,18 @@ class PlaceList(Resource):
     @api.response(400, 'Invalid input data')
     def post(self):
         """Register a new place"""
-        data = request.json  # Obtiene el payload JSON enviado en la solicitud
-        if not data:
-            return {"error": "No input data provided"}, 400
-
+        place_data = api.payload
         try:
-            place = facade.create_place(data)  # Llama al método en la fachada para crear el lugar
-            return place, 201  # Devuelve el lugar creado
+            place = facade.create_place(place_data)
+            return place.to_dict(), 201
         except ValueError as e:
-            return {"error": str(e)}, 400  # Maneja errores de validación
+            return {"message": str(e)}, 400
 
     @api.response(200, 'List of places retrieved successfully')
     def get(self):
         """Retrieve a list of all places"""
-        places = facade.get_all_places()  # Obtiene todos los lugares desde la fachada
-        return places, 200  # Devuelve la lista de lugares
+        places = facade.get_all_places()
+        return [place.to_dict() for place in places], 200
 
 @api.route('/<place_id>')
 class PlaceResource(Resource):
@@ -49,10 +55,15 @@ class PlaceResource(Resource):
     @api.response(404, 'Place not found')
     def get(self, place_id):
         """Get place details by ID"""
-        place = facade.get_place(place_id)  # Obtiene el lugar por ID desde la fachada
-        if not place:
-            return {"error": "Place not found"}, 404
-        return place, 200
+        try:
+            place, owner, amenities = facade.get_place(place_id)
+            return {
+                **place.to_dict(),
+                "owner": owner.to_dict(),
+                "amenities": [amenity.to_dict() for amenity in amenities]
+            }, 200
+        except ValueError as e:
+            return {"message": str(e)}, 404
 
     @api.expect(place_model)
     @api.response(200, 'Place updated successfully')
@@ -60,14 +71,9 @@ class PlaceResource(Resource):
     @api.response(400, 'Invalid input data')
     def put(self, place_id):
         """Update a place's information"""
-        data = request.json  # Obtiene el payload JSON enviado en la solicitud
-        if not data:
-            return {"error": "No input data provided"}, 400
-
+        place_data = api.payload
         try:
-            place = facade.update_place(place_id, data)  # Actualiza el lugar desde la fachada
-            return place, 200
+            updated_place = facade.update_place(place_id, place_data)
+            return {"message": "Place updated successfully"}, 200
         except ValueError as e:
-            return {"error": str(e)}, 400  # Maneja errores de validación
-        except KeyError:
-            return {"error": "Place not found"}, 404
+            return {"message": str(e)}, 404

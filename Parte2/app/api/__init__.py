@@ -1,27 +1,17 @@
-# app/api/v1/__init__.py
-
-from flask import Blueprint
 from flask_restx import Api
+from app.api.v1.amenities import api as amenities_api
+from app.api.v1.places import api as places_api
 
-# Importa los namespaces de los distintos módulos (users, amenities, etc.)
-from app.api.v1.users import api as users_ns
-from app.api.v1.amenities import api as amenities_ns
-from app.api.v1.places import api as places_ns
-from app.api.v1.reviews import api as reviews_ns
+# Crea una instancia de la clase Api
+api = Api()
 
-# Crea un Blueprint para la versión 1 de la API
-blueprint = Blueprint('api_v1', __name__, url_prefix='/api/v1')
+# Registrar el Namespace de amenities
+api.add_namespace(amenities_api, path='/api/v1/amenities')
 
-# Crea una instancia de Flask-RESTx Api
-api = Api(
-    blueprint,
-    title='HBNB API',
-    version='1.0',
-    description='API for the HBNB application'
-)
+def init_app(app):
+    """Inicializa la API en la aplicación Flask"""
+    api.init_app(app)
 
-# Registra los namespaces en la API bajo el Blueprint
-api.add_namespace(users_ns, path='/users')
-api.add_namespace(amenities_ns, path='/amenities')
-api.add_namespace(places_ns, path='/places')
-api.add_namespace(reviews_ns, path='/reviews')
+def create_api(app):
+    api = Api(app, doc='/swagger')
+    api.add_namespace(places_api, path='/api/v1/places')

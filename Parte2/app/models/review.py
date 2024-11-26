@@ -1,19 +1,14 @@
 from app.models.base_for_all import BaseModel
-from app.models.user import User
 
 class Review(BaseModel):
     def __init__(self, text, rating, place, user):
         super().__init__()
         self.text = text
-        self.rating = rating
+        self.rating = self.validate_rating(rating)
+        self.place = place  # Referencia a Place
+        self.user = user  # Referencia a User
 
-        # Validar que el lugar sea una instancia de Place
-        from app.models.place import Place  # Importación dentro de la función
-        if not isinstance(place, Place):
-            raise ValueError("place debe ser una instancia de Place")
-        self.place = place
-
-        # Validar que el usuario sea una instancia de User
-        if not isinstance(user, User):
-            raise ValueError("user debe ser una instancia de User")
-        self.user = user
+    def validate_rating(self, rating):
+        if 1 <= rating <= 5:
+            return rating
+        raise ValueError("Rating must be between 1 and 5.")
