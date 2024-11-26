@@ -87,18 +87,52 @@ class HBnBFacade:
         # Añadir el lugar al repositorio
         self.place_repo.add(place)
 
-        # Retorna el diccionario del lugar como JSON con código de estado 201
-        return jsonify(place.to_dict()), 201  # Llamamos a `to_dict()` para obtener el formato JSON adecuado
+        return place, user, amenities
 
     def get_place(self, place_id):
+        # Obtener el lugar desde el repositorio
         place = self.place_repo.get(place_id)
         if not place:
             raise ValueError("Place not found")
 
-        # Obtener detalles del owner y las amenidades
+        # Obtener detalles del propietario
         owner = self.user_repo.get(place.owner_id)
-        amenities = [self.amenity_repo.get(amenity.id) for amenity in place.amenities]
-        return place, owner, amenities
+        if not owner:
+            return {"message": "Owner not found"}, 404  # Si el propietario no se encuentra, se retorna un error
+
+        # Obtener detalles de las amenidades
+        amenities = []
+        for amenity_id in place.amenities:  # `place.amenities` es ahora una lista de UUIDs (strings)
+            amenity_obj = self.amenity_repo.get(amenity_id)  # Obtenemos el objeto de la amenidad desde el repositorio
+            if amenity_obj:
+                amenities.append(amenity_obj)
+            else:
+                continue  # Si alguna amenidad no se encuentra, se puede registrar un error o continuar
+
+        # Convertir los datos a un formato adecuado para la respuesta JSON
+        place_data = {
+            "id": place.id,
+            "title": place.title,
+            "description": place.description,
+            "latitude": place.latitude,
+            "longitude": place.longitude,
+        }
+
+        owner_data = {
+            "id": owner.id,
+            "first_name": owner.first_name,
+            "last_name": owner.last_name,
+            "email": owner.email,
+        }
+
+        amenities_data = [{"id": amenity.id, "name": amenity.name} for amenity in amenities]
+
+        # Devolver la respuesta
+        return {
+            "place": place_data,
+            "owner": owner_data,
+            "amenities": amenities_data
+        }
 
     def get_all_places(self):
         return self.place_repo.get_all()

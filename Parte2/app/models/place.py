@@ -43,15 +43,3 @@ class Place(BaseModel):
         if not -180 <= value <= 180:
             raise ValueError("Longitude must be between -180 and 180")
         self._longitude = value
-
-    def to_dict(self):
-        """Devuelve un diccionario con los atributos del lugar"""
-        return {
-            'id': self.id,
-            'title': self.title,
-            'description': self.description,
-            'price': self.price,
-            'latitude': self.latitude,
-            'longitude': self.longitude,
-            'owner_id': self.owner_id
-        }
