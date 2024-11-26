@@ -4,7 +4,7 @@ from app.models.user import User
 from app.models.amenity import Amenity
 
 class Place(BaseModel):
-    def __init__(self, title, description, price, latitude, longitude, owner_id, amenities):
+    def __init__(self, title, description, price, latitude, longitude, owner_id, amenities=None):
         super().__init__()
         self.title = title
         self.description = description
@@ -12,7 +12,7 @@ class Place(BaseModel):
         self.latitude = latitude
         self.longitude = longitude
         self.owner_id = owner_id
-        self.amenities = amenities  # List of Amenity objects (IDs)
+        self.amenities = amenities if isinstance(amenities, list) else []  # Default to empty list if None
 
     @property
     def price(self):
@@ -20,8 +20,10 @@ class Place(BaseModel):
 
     @price.setter
     def price(self, value):
+        if not isinstance(value, (int, float)):
+            raise ValueError("Price must be a numeric value")
         if value < 0:
-            raise ValueError("Price must be a non-negative float")
+            raise ValueError("Price must be a non-negative value")
         self._price = value
 
     @property
@@ -43,3 +45,11 @@ class Place(BaseModel):
         if not -180 <= value <= 180:
             raise ValueError("Longitude must be between -180 and 180")
         self._longitude = value
+
+    def add_amenity(self, amenity_id):
+        if amenity_id not in self.amenities:
+            self.amenities.append(amenity_id)
+
+    def remove_amenity(self, amenity_id):
+        if amenity_id in self.amenities:
+            self.amenities.remove(amenity_id)
